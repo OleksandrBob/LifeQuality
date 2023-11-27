@@ -6,4 +6,5 @@ public enum AnalysisType
     Blood = 1,
     Testosterone = 2,
     Estrogen = 3,
+    Urine = 4,
 }

@@ -2,6 +2,8 @@ namespace LifeQuality.DAL.Model;
 
 public class Analysis : Entity
 {
+    public string LaboratoryName { get; set; }
+    
     public AnalysisType AnalysisType { get; set; }
 
     public int PatientId { get; set; }
