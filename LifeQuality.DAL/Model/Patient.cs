@@ -7,4 +7,8 @@ public class Patient : User
     public string PhoneNumber { get; set; }
 
     public List<Analysis> PatientAnalyses { get; set; }
+
+    public int DoctorId { get; set; }
+    
+    public Doctor Doctor { get; set; }
 }
