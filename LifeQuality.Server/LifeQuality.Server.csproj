@@ -15,4 +15,8 @@
     <ProjectReference Include="..\LifeQuality.Core\LifeQuality.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Comands\Analysis\" />
+  </ItemGroup>
+
 </Project>

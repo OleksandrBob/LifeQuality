@@ -1,7 +1,6 @@
 using LifeQuality.Core.Services;
 using LifeQuality.Core.Services.Interfaces;
 using LifeQuality.DAL.Context;
-using LifeQuality.DAL.Model;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
