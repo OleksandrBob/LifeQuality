@@ -21,9 +21,11 @@ public class AnalysisController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<List<Analysis>> GetAllAnalysis()
+    public async Task<List<AnalysisStandart>> GetAllAnalysis()
     {
-        var r = await _analysisService.GetAllAnalyses();
+        var r = await _analysisService.GetAllStandarts();
+        var rr = JsonConvert.DeserializeObject<BloodStandart>(r[0].Data);
+
         return r;
     }
 
@@ -32,13 +34,16 @@ public class AnalysisController : ControllerBase
     {
         BloodStandart standart = new()
         {
-            Hemoglobin = new() { (0, 4), (4.01, 5), (5.01, double.MaxValue) },
-            Erythrocytes = new() { (0, 4), (4.01, 5), (5.01, double.MaxValue) },
-            Leukocytes = new() { (0, 4), (4.01, 5), (5.01, double.MaxValue) },
-            Platelets = new() { (0, 4), (4.01, 5), (5.01, double.MaxValue) },
+            Hemoglobin = (1, 2),
+            Erythrocytes = (1, 2),
+            Leukocytes = (1, 2),
+            Platelets = (1, 2),
         };
 
         var json = JsonConvert.SerializeObject(standart);
+
+        var r = JsonConvert.DeserializeObject<BloodStandart>(json);
+
         return json;
     }
 }

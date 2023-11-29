@@ -4,7 +4,6 @@ public enum HeightRange
 {
     None = 0,
     ZeroToFifty = 1,
-    FiftyOneToHundred = 2,
-    HundredOneToHundredSixty = 3,
-    HundredSixtyOneToTwoHundred = 4,
+    FiftyOneToHundredSixty = 2,
+    HundredSixtyOnePlus = 3,
 }
