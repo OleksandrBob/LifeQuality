@@ -14,6 +14,21 @@ public class AnalysisService : IAnalysisService
         _dataContext = dataContext;
     }
 
+    public async Task<List<Analysis>> GetUserAnalysis(int userId, AnalysisType analysisType = AnalysisType.None,
+        bool sortByDescendingDate = false)
+    {
+        var query = _dataContext.Analyses.Where(a => a.PatientId == userId);
+
+        if (analysisType != AnalysisType.None)
+        {
+            query = query.Where(a => a.AnalysisType == analysisType);
+        }
+
+        query = sortByDescendingDate ? query.OrderByDescending(a => a.AnalysisDate) : query.OrderBy(a => a.AnalysisDate);
+
+        return await query.ToListAsync();
+    }
+
     public async Task<List<Analysis>> GetAllAnalyses()
     {
         return await _dataContext.Analyses.ToListAsync();

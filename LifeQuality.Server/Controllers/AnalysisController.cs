@@ -1,6 +1,9 @@
+using LifeQuality.Core.Dto;
 using LifeQuality.Core.Services.Interfaces;
 using LifeQuality.Core.StandartsInfo.Blood;
+using LifeQuality.DAL.Context;
 using LifeQuality.DAL.Model;
+using LifeQuality.Server.Comands.Analysis;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -13,20 +16,26 @@ public class AnalysisController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly IAnalysisService _analysisService;
+    private readonly IDataContext _dataContext;
 
-    public AnalysisController(IMediator mediator, IAnalysisService analysisService)
+    public AnalysisController(IMediator mediator, IAnalysisService analysisService, IDataContext dataContext)
     {
         _mediator = mediator;
         _analysisService = analysisService;
+        _dataContext = dataContext;
     }
 
     [HttpGet]
-    public async Task<List<AnalysisStandart>> GetAllAnalysis()
+    public async Task<IActionResult> GetUserAnalysis([FromQuery]GetAnalysisQuery query)
     {
-        var r = await _analysisService.GetAllStandarts();
-        var rr = JsonConvert.DeserializeObject<BloodStandart>(r[0].Data);
+        var result = await _mediator.Send(query);
 
-        return r;
+        if (result.IsFailure)
+        {
+            return NotFound(result.Error);
+        }
+
+        return Ok(result.Value);
     }
 
     [HttpPost]

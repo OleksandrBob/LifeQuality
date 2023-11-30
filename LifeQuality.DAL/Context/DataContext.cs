@@ -29,6 +29,11 @@ public sealed class DataContext : DbContext, IDataContext
     {
         optionsBuilder.UseSqlServer(@"Data Source=.\SQLEXPRESS;Initial Catalog=LifeQuality;Integrated Security=True");
     }
+    
+    public async Task CompleteAsync()
+    {
+        await SaveChangesAsync();
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

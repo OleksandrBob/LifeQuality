@@ -4,5 +4,5 @@ namespace LifeQuality.Core.Services.Interfaces;
 
 public interface IPatientService
 {
-    Task<List<Patient>> GetPatientsBy(string searchQuery);
+    Task<List<Patient>> GetPatientsBy(int doctorId, string searchQuery);
 }

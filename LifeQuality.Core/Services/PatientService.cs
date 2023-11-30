@@ -14,14 +14,15 @@ public class PatientService : IPatientService
         _dataContext = dataContext;
     }
 
-    public async Task<List<Patient>> GetPatientsBy(string searchQuery)
+    public async Task<List<Patient>> GetPatientsBy(int doctorId, string searchQuery)
     {
         int.TryParse(searchQuery, out var userId);
 
         return await _dataContext.Patients.Where(p =>
-            p.Name.Contains(searchQuery) ||
-            p.Surname.Contains(searchQuery) ||
-            p.Id == userId ||
-            p.Email.Contains(searchQuery)).ToListAsync();
+            p.DoctorId == doctorId && (
+                p.Name.Contains(searchQuery) ||
+                p.Surname.Contains(searchQuery) ||
+                p.Id == userId ||
+                p.Email.Contains(searchQuery))).ToListAsync();
     }
 }
