@@ -32,7 +32,7 @@ public class GetAnalysisQuery : IRequest<Result<List<AnalysisDto>, string>>
 
             if (!analysis?.Any() ?? true)
             {
-                return Result.Failure<List<AnalysisDto>, string>("Analysis not fount");
+                return Result.Failure<List<AnalysisDto>, string>("Analysis not found");
             }
 
             return analysis.Select(a => new AnalysisDto()

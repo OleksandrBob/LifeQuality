@@ -16,7 +16,7 @@ public class PatientController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllAnalysis([FromQuery]GetPatientQuery query)
+    public async Task<IActionResult> GetPatients([FromQuery]GetPatientQuery query)
     {
         var result = await _mediator.Send(query);
 
