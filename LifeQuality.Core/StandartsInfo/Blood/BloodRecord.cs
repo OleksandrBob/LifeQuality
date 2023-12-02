@@ -1,6 +1,7 @@
-namespace LifeQuality.Core.StandartsInfo.Blood;
+using LifeQuality.Core.StandartsInfo.Interfaces;
 
-public class BloodRecord
+
+public class BloodRecord : IRecord
 {
     public double Hemoglobin { get; set; }
 

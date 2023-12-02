@@ -1,6 +1,8 @@
 using LifeQuality.Core.Services.Interfaces;
 using LifeQuality.Core.StandartsInfo;
 using LifeQuality.Core.StandartsInfo.Blood;
+using LifeQuality.Core.StandartsInfo.Stool;
+using LifeQuality.Core.StandartsInfo.Urine;
 using LifeQuality.DAL.Context;
 using LifeQuality.DAL.Model;
 using Microsoft.EntityFrameworkCore;
@@ -59,6 +61,8 @@ public class AnalysisService : IAnalysisService
         return analysisStandart.AnalysisType switch
         {
             AnalysisType.Blood => CheckBlood(analysisToCheck, analysisStandart),
+            AnalysisType.Urine => CheckUrine(analysisToCheck, analysisStandart),
+            AnalysisType.Stool => CheckStool(analysisToCheck, analysisStandart),
         };
     }
 
@@ -114,7 +118,113 @@ public class AnalysisService : IAnalysisService
     {
         return JsonConvert.DeserializeObject<BloodStandart>(analysisStandart.Data);
     }
-    
+
+    private AnalysisCheckResult CheckUrine(Analysis analysisToCheck, AnalysisStandart analysisStandart)
+    {
+        var standart = GetUrineStandart(analysisStandart);
+        var analysis = GetUrineAnalysis(analysisToCheck);
+
+        var phCheck = new AnalysisPropertyCheckResult
+        {
+            Name = nameof(UrineParameters.pH),
+            Value = analysis.pH,
+            NormalValuesRange = new() { standart.pH.Item1, standart.pH.Item2 },
+            CheckResult = GetCheckResult(analysis.pH, standart.pH),
+        };
+
+        var proteinCheck = new AnalysisPropertyCheckResult
+        {
+            Name = nameof(UrineParameters.Protein),
+            Value = analysis.Protein,
+            NormalValuesRange = new() { standart.Protein.Item1, standart.Protein.Item2 },
+            CheckResult = GetCheckResult(analysis.Protein, standart.Protein),
+        };
+
+        var glucoseCheck = new AnalysisPropertyCheckResult
+        {
+            Name = nameof(UrineParameters.Glucose),
+            Value = analysis.Glucose,
+            NormalValuesRange = new() { standart.Glucose.Item1, standart.Glucose.Item2 },
+            CheckResult = GetCheckResult(analysis.Glucose, standart.Glucose),
+        };
+
+        var microorganismsCheck = new AnalysisPropertyCheckResult
+        {
+            Name = nameof(UrineParameters.Microorganisms),
+            Value = analysis.Microorganisms,
+            NormalValuesRange = new() { standart.Microorganisms.Item1, standart.Microorganisms.Item2 },
+            CheckResult = GetCheckResult(analysis.Microorganisms, standart.Microorganisms),
+        };
+
+        List<AnalysisPropertyCheckResult> checkResult = new(Enum.GetNames(typeof(UrineParameters)).Length)
+            { phCheck, proteinCheck, glucoseCheck, microorganismsCheck };
+
+        return new AnalysisCheckResult { AnalysisProperties = checkResult };
+    }
+
+    private UrineRecord GetUrineAnalysis(Analysis analysisToCheck)
+    {
+        return JsonConvert.DeserializeObject<UrineRecord>(analysisToCheck.Data);
+    }
+
+    private UrineStandart GetUrineStandart(AnalysisStandart analysisStandart)
+    {
+        return JsonConvert.DeserializeObject<UrineStandart>(analysisStandart.Data);
+    }
+
+    private AnalysisCheckResult CheckStool(Analysis analysisToCheck, AnalysisStandart analysisStandart)
+    {
+        var standart = GetStoolStandart(analysisStandart);
+        var analysis = GetStoolAnalysis(analysisToCheck);
+
+        var mucusCheck = new AnalysisPropertyCheckResult
+        {
+            Name = nameof(StoolParameters.Mucus),
+            Value = analysis.Mucus,
+            NormalValuesRange = new() { standart.Mucus.Item1, standart.Mucus.Item2 },
+            CheckResult = GetCheckResult(analysis.Mucus, standart.Mucus),
+        };
+
+        var bloodCheck = new AnalysisPropertyCheckResult
+        {
+            Name = nameof(StoolParameters.Blood),
+            Value = analysis.Blood,
+            NormalValuesRange = new() { standart.Blood.Item1, standart.Blood.Item2 },
+            CheckResult = GetCheckResult(analysis.Blood, standart.Blood),
+        };
+
+        var whiteBloodCellsCheck = new AnalysisPropertyCheckResult
+        {
+            Name = nameof(StoolParameters.WhiteBloodCells),
+            Value = analysis.WhiteBloodCells,
+            NormalValuesRange = new() { standart.WhiteBloodCells.Item1, standart.WhiteBloodCells.Item2 },
+            CheckResult = GetCheckResult(analysis.WhiteBloodCells, standart.WhiteBloodCells),
+        };
+
+        var microorganismsCheck = new AnalysisPropertyCheckResult
+        {
+            Name = nameof(StoolParameters.Microorganisms),
+            Value = analysis.Microorganisms,
+            NormalValuesRange = new() { standart.Microorganisms.Item1, standart.Microorganisms.Item2 },
+            CheckResult = GetCheckResult(analysis.Microorganisms, standart.Microorganisms),
+        };
+
+        List<AnalysisPropertyCheckResult> checkResult = new(Enum.GetNames(typeof(UrineParameters)).Length)
+            { mucusCheck, bloodCheck, whiteBloodCellsCheck, microorganismsCheck };
+
+        return new AnalysisCheckResult { AnalysisProperties = checkResult };
+    }
+
+    private StoolRecord GetStoolAnalysis(Analysis analysisToCheck)
+    {
+        return JsonConvert.DeserializeObject<StoolRecord>(analysisToCheck.Data);
+    }
+
+    private StoolStandart GetStoolStandart(AnalysisStandart analysisStandart)
+    {
+        return JsonConvert.DeserializeObject<StoolStandart>(analysisStandart.Data);
+    }
+
     private PossibleAnalysisResult GetCheckResult(double value, (double, double) normalRange)
     {
         if (value < normalRange.Item1)
