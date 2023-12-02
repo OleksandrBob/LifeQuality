@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMediatR(c => c.RegisterServicesFromAssemblyContaining<Program>());
 
 builder.Services.AddDbContext<DataContext>(o =>
-    o.UseSqlServer("Data Source=.\\SQLEXPRESS;Initial Catalog=LifeQuality;Integrated Security=True"));
+    o.UseSqlServer("Data Source=DESKTOP-JJTRH2D;Initial Catalog=LifeQualityDB;Integrated Security=True"));
 
 builder.Services.AddScoped<IDataContext, DataContext>();
 builder.Services.AddTransient<IPatientService, PatientService>();
