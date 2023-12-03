@@ -1,3 +1,4 @@
+using CSharpFunctionalExtensions;
 using LifeQuality.Core.Services.Interfaces;
 using LifeQuality.Core.StandartsInfo;
 using LifeQuality.Core.StandartsInfo.Blood;
@@ -6,17 +7,21 @@ using LifeQuality.Core.StandartsInfo.Urine;
 using LifeQuality.DAL.Context;
 using LifeQuality.DAL.Model;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace LifeQuality.Core.Services;
 
 public class AnalysisService : IAnalysisService
 {
     private readonly IDataContext _dataContext;
+    private readonly ILogger _logger;
 
-    public AnalysisService(IDataContext dataContext)
+    public AnalysisService(IDataContext dataContext, ILogger<AnalysisService> logger)
     {
         _dataContext = dataContext;
+        _logger = logger;
     }
 
     public async Task<List<Analysis>> GetUserAnalysis(int userId, AnalysisType analysisType = AnalysisType.None,
@@ -33,12 +38,18 @@ public class AnalysisService : IAnalysisService
             ? query.OrderByDescending(a => a.AnalysisDate)
             : query.OrderBy(a => a.AnalysisDate);
 
+        _logger.LogInformation($"Gotten count - {query.Count()} analysis for user {userId}");
         return await query.ToListAsync();
     }
 
     public async Task<Analysis> GetAnalysisById(int userId)
     {
-        return await _dataContext.Analyses.FirstOrDefaultAsync(a => a.Id == userId);
+        var result = await _dataContext.Analyses.FirstOrDefaultAsync(a => a.Id == userId);
+        if(result != null)
+           _logger.LogInformation($"Gotten - {result.Id} analysis for user {userId}");
+        else
+            _logger.LogInformation($"Gotten 0 analysis for user {userId}");
+        return result;
     }
 
     public async Task<AnalysisStandart> GetStandartByParameters(
@@ -48,12 +59,14 @@ public class AnalysisService : IAnalysisService
         HeightRange heightRange,
         Region region)
     {
-        return await _dataContext.AnalysesStandarts.FirstAsync(s =>
+        var result = await _dataContext.AnalysesStandarts.FirstAsync(s =>
             s.AnalysisType == type &&
             s.Region == region &&
             s.AgeRange == ageRange &&
             s.HeightRange == heightRange &&
             s.Gender == gender);
+        _logger.LogInformation($"Gotten id - {result.Id} standart");
+        return result;
     }
 
     public AnalysisCheckResult CheckAnalysisDueToStandart(Analysis analysisToCheck, AnalysisStandart analysisStandart)
@@ -106,6 +119,7 @@ public class AnalysisService : IAnalysisService
         List<AnalysisPropertyCheckResult> checkResult = new(Enum.GetNames(typeof(BloodParameters)).Length)
             { hemoglobinCheck, erythrocytesCheck, leukocytesCheck, plateletsCheck };
 
+        _logger.LogInformation($"Analysis of blood has been standartized");
         return new AnalysisCheckResult { AnalysisProperties = checkResult };
     }
 
@@ -159,6 +173,8 @@ public class AnalysisService : IAnalysisService
         List<AnalysisPropertyCheckResult> checkResult = new(Enum.GetNames(typeof(UrineParameters)).Length)
             { phCheck, proteinCheck, glucoseCheck, microorganismsCheck };
 
+        _logger.LogInformation($"Analysis of urine has been standartized");
+
         return new AnalysisCheckResult { AnalysisProperties = checkResult };
     }
 
@@ -211,6 +227,8 @@ public class AnalysisService : IAnalysisService
 
         List<AnalysisPropertyCheckResult> checkResult = new(Enum.GetNames(typeof(UrineParameters)).Length)
             { mucusCheck, bloodCheck, whiteBloodCellsCheck, microorganismsCheck };
+
+        _logger.LogInformation($"Analysis of stool has been standartized");
 
         return new AnalysisCheckResult { AnalysisProperties = checkResult };
     }
