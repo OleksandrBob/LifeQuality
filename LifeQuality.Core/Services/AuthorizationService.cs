@@ -30,8 +30,10 @@ public class AuthorizationService : IAuthorizationService
         {
             var patient = await _dataContext.Patients.Where(p => p.Email == login && p.Password == password).ToListAsync();
             if (patient.Count == 0) return null;
+            _logger.LogInformation($"Login {patient.First().Id} patient");
             return new LoginResultDto() { Id = patient.First().Id, Status = "patient" };
         }
+        _logger.LogInformation($"Login {doctor.First().Id} doctor");
         return new LoginResultDto() { Id = doctor.First().Id, Status = "doctor" };
     }
 }

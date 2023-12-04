@@ -11,6 +11,7 @@ builder.Services.AddDbContext<DataContext>(o =>
     o.UseSqlServer("Data Source=DESKTOP-JJTRH2D;Initial Catalog=LifeQualityDB;Integrated Security=True"));
 
 builder.Services.AddScoped<IDataContext, DataContext>();
+builder.Services.AddScoped<IAnalysisAdapter, AnalysisAdapter>();
 builder.Services.AddTransient<IPatientService, PatientService>();
 builder.Services.AddTransient<IAnalysisService, AnalysisService>();
 builder.Services.AddTransient<IAuthorizationService, AuthorizationService>();
