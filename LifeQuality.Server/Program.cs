@@ -13,6 +13,7 @@ builder.Services.AddDbContext<DataContext>(o =>
 builder.Services.AddScoped<IDataContext, DataContext>();
 builder.Services.AddTransient<IPatientService, PatientService>();
 builder.Services.AddTransient<IAnalysisService, AnalysisService>();
+builder.Services.AddTransient<IAuthorizationService, AuthorizationService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
