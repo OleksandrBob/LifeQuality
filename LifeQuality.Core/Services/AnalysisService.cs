@@ -1,20 +1,28 @@
+using CSharpFunctionalExtensions;
 using LifeQuality.Core.Services.Interfaces;
 using LifeQuality.Core.StandartsInfo;
 using LifeQuality.Core.StandartsInfo.Blood;
+using LifeQuality.Core.StandartsInfo.Stool;
+using LifeQuality.Core.StandartsInfo.Urine;
 using LifeQuality.DAL.Context;
 using LifeQuality.DAL.Model;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace LifeQuality.Core.Services;
 
 public class AnalysisService : IAnalysisService
 {
     private readonly IDataContext _dataContext;
-
-    public AnalysisService(IDataContext dataContext)
+    private readonly IAnalysisAdapter _analysisAdapter;
+    private readonly ILogger _logger;
+    public AnalysisService(IDataContext dataContext, IAnalysisAdapter analysisAdapter, ILogger<AnalysisService> logger)
     {
         _dataContext = dataContext;
+        _analysisAdapter = analysisAdapter;
+        _logger = logger;
     }
 
     public async Task<List<Analysis>> GetUserAnalysis(int userId, AnalysisType analysisType = AnalysisType.None,
@@ -31,12 +39,18 @@ public class AnalysisService : IAnalysisService
             ? query.OrderByDescending(a => a.AnalysisDate)
             : query.OrderBy(a => a.AnalysisDate);
 
+        _logger.LogInformation($"Gotten count - {query.Count()} analysis for user {userId}");
         return await query.ToListAsync();
     }
 
     public async Task<Analysis> GetAnalysisById(int userId)
     {
-        return await _dataContext.Analyses.FirstOrDefaultAsync(a => a.Id == userId);
+        var result = await _dataContext.Analyses.FirstOrDefaultAsync(a => a.Id == userId);
+        if(result != null)
+           _logger.LogInformation($"Gotten - {result.Id} analysis for user {userId}");
+        else
+            _logger.LogInformation($"Gotten 0 analysis for user {userId}");
+        return result;
     }
 
     public async Task<AnalysisStandart> GetStandartByParameters(
@@ -46,12 +60,14 @@ public class AnalysisService : IAnalysisService
         HeightRange heightRange,
         Region region)
     {
-        return await _dataContext.AnalysesStandarts.FirstAsync(s =>
+        var result = await _dataContext.AnalysesStandarts.FirstAsync(s =>
             s.AnalysisType == type &&
             s.Region == region &&
             s.AgeRange == ageRange &&
             s.HeightRange == heightRange &&
             s.Gender == gender);
+        _logger.LogInformation($"Gotten id - {result.Id} standart");
+        return result;
     }
 
     public AnalysisCheckResult CheckAnalysisDueToStandart(Analysis analysisToCheck, AnalysisStandart analysisStandart)
@@ -59,6 +75,8 @@ public class AnalysisService : IAnalysisService
         return analysisStandart.AnalysisType switch
         {
             AnalysisType.Blood => CheckBlood(analysisToCheck, analysisStandart),
+            AnalysisType.Urine => CheckUrine(analysisToCheck, analysisStandart),
+            AnalysisType.Stool => CheckStool(analysisToCheck, analysisStandart),
         };
     }
 
@@ -67,42 +85,7 @@ public class AnalysisService : IAnalysisService
         var standart = GetBloodStandart(analysisStandart);
         var analysis = GetBloodAnalysis(analysisToCheck);
 
-        var hemoglobinCheck = new AnalysisPropertyCheckResult
-        {
-            Name = nameof(BloodParameters.Hemoglobin),
-            Value = analysis.Hemoglobin,
-            NormalValuesRange = new() {standart.Hemoglobin.Item1, standart.Hemoglobin.Item2},
-            CheckResult = GetCheckResult(analysis.Hemoglobin, standart.Hemoglobin),
-        };
-
-        var erythrocytesCheck = new AnalysisPropertyCheckResult
-        {
-            Name = nameof(BloodParameters.Erythrocytes),
-            Value = analysis.Erythrocytes,
-            NormalValuesRange = new() {standart.Erythrocytes.Item1, standart.Erythrocytes.Item2},
-            CheckResult = GetCheckResult(analysis.Erythrocytes, standart.Erythrocytes),
-        };
-
-        var leukocytesCheck = new AnalysisPropertyCheckResult
-        {
-            Name = nameof(BloodParameters.Leukocytes),
-            Value = analysis.Leukocytes,
-            NormalValuesRange = new() {standart.Leukocytes.Item1, standart.Leukocytes.Item2},
-            CheckResult = GetCheckResult(analysis.Leukocytes, standart.Leukocytes),
-        };
-
-        var plateletsCheck = new AnalysisPropertyCheckResult
-        {
-            Name = nameof(BloodParameters.Platelets),
-            Value = analysis.Platelets,
-            NormalValuesRange = new() {standart.Platelets.Item1, standart.Platelets.Item2},
-            CheckResult = GetCheckResult(analysis.Platelets, standart.Platelets),
-        };
-
-        List<AnalysisPropertyCheckResult> checkResult = new(Enum.GetNames(typeof(BloodParameters)).Length)
-            { hemoglobinCheck, erythrocytesCheck, leukocytesCheck, plateletsCheck };
-
-        return new AnalysisCheckResult { AnalysisProperties = checkResult };
+        return _analysisAdapter.CheckBloodAnalysis(analysis, standart);
     }
 
     private BloodRecord GetBloodAnalysis(Analysis analysisToCheck)
@@ -114,21 +97,43 @@ public class AnalysisService : IAnalysisService
     {
         return JsonConvert.DeserializeObject<BloodStandart>(analysisStandart.Data);
     }
-    
-    private PossibleAnalysisResult GetCheckResult(double value, (double, double) normalRange)
+
+    private AnalysisCheckResult CheckUrine(Analysis analysisToCheck, AnalysisStandart analysisStandart)
     {
-        if (value < normalRange.Item1)
-        {
-            return PossibleAnalysisResult.Bad;
-        }
+        var standart = GetUrineStandart(analysisStandart);
+        var analysis = GetUrineAnalysis(analysisToCheck);
 
-        if (value < normalRange.Item2)
-        {
-            return PossibleAnalysisResult.Medium;
-        }
-
-        return PossibleAnalysisResult.Good;
+        return _analysisAdapter.CheckUrineAnalysis(analysis, standart);
     }
+
+    private UrineRecord GetUrineAnalysis(Analysis analysisToCheck)
+    {
+        return JsonConvert.DeserializeObject<UrineRecord>(analysisToCheck.Data);
+    }
+
+    private UrineStandart GetUrineStandart(AnalysisStandart analysisStandart)
+    {
+        return JsonConvert.DeserializeObject<UrineStandart>(analysisStandart.Data);
+    }
+
+    private AnalysisCheckResult CheckStool(Analysis analysisToCheck, AnalysisStandart analysisStandart)
+    {
+        var standart = GetStoolStandart(analysisStandart);
+        var analysis = GetStoolAnalysis(analysisToCheck);
+
+        return _analysisAdapter.CheckStoolAnalysis(analysis, standart);
+    }
+
+    private StoolRecord GetStoolAnalysis(Analysis analysisToCheck)
+    {
+        return JsonConvert.DeserializeObject<StoolRecord>(analysisToCheck.Data);
+    }
+
+    private StoolStandart GetStoolStandart(AnalysisStandart analysisStandart)
+    {
+        return JsonConvert.DeserializeObject<StoolStandart>(analysisStandart.Data);
+    }
+
 
     public async Task<List<Analysis>> GetAllAnalyses()
     {

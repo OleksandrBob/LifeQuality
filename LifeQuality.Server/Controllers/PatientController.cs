@@ -27,4 +27,30 @@ public class PatientController : ControllerBase
 
         return Ok(result.Value);
     }
+
+    [HttpGet("doctor")]
+    public async Task<IActionResult> GetPatientDoctor([FromQuery] GetPatientDoctorQuery query)
+    {
+        var result = await _mediator.Send(query);
+
+        if (result.IsFailure)
+        {
+            return NotFound(result.Error);
+        }
+
+        return Ok(result.Value);
+    }
+
+    [HttpGet("analysis")]
+    public async Task<IActionResult> GetPatientAnalysis([FromQuery] GetPatientAnalysis query)
+    {
+        var result = await _mediator.Send(query);
+
+        if (result.IsFailure)
+        {
+            return NotFound(result.Error);
+        }
+
+        return Ok(result.Value);
+    }
 }

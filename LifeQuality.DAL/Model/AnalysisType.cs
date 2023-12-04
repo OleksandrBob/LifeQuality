@@ -4,7 +4,6 @@ public enum AnalysisType
 {
     None = 0,
     Blood = 1,
-    Testosterone = 2,
-    Estrogen = 3,
-    Urine = 4,
+    Urine = 2,
+    Stool = 3,
 }
