@@ -14,10 +14,6 @@ namespace LifeQuality.Test;
 public class AnalysisTests
 {
     private IAnalysisService _analysisService;
-    private Mock<IDataContext> _mockDataContext;
-    private Mock<IAnalysisAdapter> _mockAnalysisAdapter;
-    private Mock<ILogger<AnalysisService>> _mockLogger;
-    private List<Analysis> _mockAnalyses;
 
     [SetUp]
     public void Setup()
