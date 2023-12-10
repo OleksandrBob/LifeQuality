@@ -22,4 +22,5 @@ public interface IAnalysisService
     Task<List<AnalysisStandart>> GetAllStandarts();
 
     AnalysisCheckResult CheckAnalysisDueToStandart(Analysis analysisToCheck, AnalysisStandart analysisStandart);
+    Task<int> AddNewAnalysis(int patientId, string laboratoryName, AnalysisType analysisType, DateTime analysisDate, string data);
 }

@@ -109,11 +109,44 @@ public class AnalysisAdapter : IAnalysisAdapter
 
     public AnalysisCheckResult CheckStoolAnalysis(StoolRecord analysis, StoolStandart standart)
     {
-        // Implement stool analysis check logic here
-        _logger.LogInformation("Checking stool analysis...");
-        // ...
+        var mucusCheck = new AnalysisPropertyCheckResult
+        {
+            Name = nameof(StoolParameters.Mucus),
+            Value = analysis.Mucus,
+            NormalValuesRange = new() { standart.Mucus.Item1, standart.Mucus.Item2 },
+            CheckResult = GetCheckResult(analysis.Mucus, standart.Mucus),
+        };
 
-        return new AnalysisCheckResult(); // Return the result
+        var bloodCheck = new AnalysisPropertyCheckResult
+        {
+            Name = nameof(StoolParameters.Blood),
+            Value = analysis.Blood,
+            NormalValuesRange = new() { standart.Blood.Item1, standart.Blood.Item2 },
+            CheckResult = GetCheckResult(analysis.Blood, standart.Blood),
+        };
+
+        var whiteBloodCellsCheck = new AnalysisPropertyCheckResult
+        {
+            Name = nameof(StoolParameters.WhiteBloodCells),
+            Value = analysis.WhiteBloodCells,
+            NormalValuesRange = new() { standart.WhiteBloodCells.Item1, standart.WhiteBloodCells.Item2 },
+            CheckResult = GetCheckResult(analysis.WhiteBloodCells, standart.WhiteBloodCells),
+        };
+
+        var microorganismsCheck = new AnalysisPropertyCheckResult
+        {
+            Name = nameof(StoolParameters.Microorganisms),
+            Value = analysis.Microorganisms,
+            NormalValuesRange = new() { standart.Microorganisms.Item1, standart.Microorganisms.Item2 },
+            CheckResult = GetCheckResult(analysis.Microorganisms, standart.Microorganisms),
+        };
+
+        List<AnalysisPropertyCheckResult> checkResult = new(Enum.GetNames(typeof(UrineParameters)).Length)
+            { mucusCheck, bloodCheck, whiteBloodCellsCheck, microorganismsCheck };
+
+        _logger.LogInformation($"Analysis of stool has been standartized");
+
+        return new AnalysisCheckResult { AnalysisProperties = checkResult };
     }
 
     private PossibleAnalysisResult GetCheckResult(double value, (double, double) normalRange)

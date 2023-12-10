@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using LifeQuality.Core.Dto;
 using LifeQuality.Core.Services.Interfaces;
 using LifeQuality.Core.StandartsInfo;
 using LifeQuality.Core.StandartsInfo.Blood;
@@ -143,5 +144,39 @@ public class AnalysisService : IAnalysisService
     public async Task<List<AnalysisStandart>> GetAllStandarts()
     {
         return await _dataContext.AnalysesStandarts.ToListAsync();
+    }
+
+
+    public async Task<int> AddNewAnalysis(int patientId, string laboratoryName, AnalysisType analysisType, DateTime analysisDate, string data)
+    {
+        int result = 0;
+        if (_dataContext.Patients.Find(patientId)!= null)
+        {
+            var analysis = new Analysis()
+            {
+                PatientId = patientId,
+                AnalysisType = analysisType,
+                AnalysisDate = analysisDate,
+                Data = data,
+                LaboratoryName = laboratoryName
+            };
+             var add = _dataContext.Analyses.Add(analysis);
+             await _dataContext.CompleteAsync();
+             if(add != null)
+             {
+                _logger.LogInformation($"Analysis {add.Entity.Id} added");
+                result = add.Entity.Id;
+             }
+            else
+            {
+                _logger.LogInformation($"Db error");
+            }
+        }
+        else
+        {
+            _logger.LogInformation($"No patient with id {patientId} found");
+        }
+           
+        return result;
     }
 }
