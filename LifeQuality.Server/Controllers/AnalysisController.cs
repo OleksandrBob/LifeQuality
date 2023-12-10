@@ -28,7 +28,21 @@ public class AnalysisController : ControllerBase
 
         return Ok(result.Value);
     }
-    
+
+    [HttpGet("add")]
+    public async Task<IActionResult> AddAnalysis([FromQuery] AddAnalysisQuery query)
+    {
+        var result = await _mediator.Send(query);
+
+        if (result.IsFailure)
+        {
+            return NotFound(result.Error);
+        }
+
+        return Ok(result.Value);
+    }
+
+
     [HttpGet("checked")]
     public async Task<IActionResult> GetAnalysisChecked([FromQuery] GetAnalysisCheckedQuery query)
     {
